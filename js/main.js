@@ -464,6 +464,27 @@ advApp.controller('advController', ['$document', '$filter', '$scope', function($
       while (inc.length > 3 - (loc.noSingles ? 1 : 0) - (loc.noTens ? 1 : 0) - (loc.noHundreds ? 1 : 0)) {
         inc.pop();
       }
+      for (j = 0; j < inc.length; j++) {
+        tempPlanet.investments = deepCopy(loc.investments);
+        tempPlanet.investments[i][1] += inc[j];
+        calcState(tempPlanet);
+        tempUnlock = calcUnlockCost(loc, i, loc.investments[i][1], inc[j]);
+        tempUnlockTime = tempUnlock / loc.totalMoneyPerSecond;
+        tempPercentageIncrease = (tempPlanet.totalMoneyPerSecond - loc.totalMoneyPerSecond) * 100 / loc.totalMoneyPerSecond;
+        if ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease)) {
+          upgradeScore = calcUpgradeScore(tempPlanet, loc, tempUnlockTime);
+          if (upgradeScore > max) {
+            max = upgradeScore;
+            maxObj = ['level', i, tempPlanet.investments[i][1]];
+          }
+          loc.recTable.push([['level', i], tempPlanet.investments[i][1], upgradeScore, tempUnlock, tempUnlockTime, tempPlanet.totalMoneyPerSecond - loc.totalMoneyPerSecond, tempPercentageIncrease]);
+        }
+      }
+    }
+    for (i = 0; i < loc.investments.length; i++) {
+      while (inc.length > 0) {
+        inc.pop();
+      }
       if (i === 1 && $scope.isWorld('earth')) {
         for (j = 1; j < 4; j++) {
           k = getDifferenceNBonus(loc, i, j);
@@ -490,7 +511,7 @@ advApp.controller('advController', ['$document', '$filter', '$scope', function($
         tempUnlock = calcUnlockCost(loc, i, loc.investments[i][1], inc[j]);
         tempUnlockTime = tempUnlock / loc.totalMoneyPerSecond;
         tempPercentageIncrease = (tempPlanet.totalMoneyPerSecond - loc.totalMoneyPerSecond) * 100 / loc.totalMoneyPerSecond;
-        if ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease)) {
+        if ((loc.noFilterUnlocks) || ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease))) {
           upgradeScore = calcUpgradeScore(tempPlanet, loc, tempUnlockTime);
           if (upgradeScore > max) {
             max = upgradeScore;
@@ -511,7 +532,7 @@ advApp.controller('advController', ['$document', '$filter', '$scope', function($
         calcState(tempPlanet);
         tempUnlockTime = loc.cashUpgrades[j][0] / loc.totalMoneyPerSecond;
         tempPercentageIncrease = (tempPlanet.totalMoneyPerSecond - loc.totalMoneyPerSecond) * 100 / loc.totalMoneyPerSecond;
-        if ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease)) {
+        if ((loc.noFilterUpgrades) || ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease))) {
           upgradeScore = calcUpgradeScore(tempPlanet, loc, tempUnlockTime);
           if (upgradeScore > max) {
             max = upgradeScore;
@@ -546,7 +567,7 @@ advApp.controller('advController', ['$document', '$filter', '$scope', function($
     calcState(tempPlanet);
     tempUnlockTime = tempUnlock / loc.totalMoneyPerSecond;
     tempPercentageIncrease = (tempPlanet.totalMoneyPerSecond - loc.totalMoneyPerSecond) * 100 / loc.totalMoneyPerSecond;
-    if ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease)) {
+    if ((loc.noFilterUnlocks) || ((loc.filterTime === null || loc.filterTime > tempUnlockTime) && ($scope.filterTime.percentage === null || $scope.filterTime.percentage < tempPercentageIncrease))) {
       upgradeScore = calcUpgradeScore(tempPlanet, loc, tempUnlockTime);
       if (upgradeScore > max) {
         max = upgradeScore;
